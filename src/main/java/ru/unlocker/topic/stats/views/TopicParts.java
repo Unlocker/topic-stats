@@ -2,6 +2,7 @@ package ru.unlocker.topic.stats.views;
 
 import java.util.Map;
 import org.joda.time.DateTime;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * Список партиций и число сообщений в них.
@@ -18,6 +19,7 @@ public class TopicParts {
     /**
      * дата последнего запуска
      */
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private final DateTime timestamp;
 
     /**

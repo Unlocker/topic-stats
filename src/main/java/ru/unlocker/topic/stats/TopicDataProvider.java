@@ -2,6 +2,7 @@ package ru.unlocker.topic.stats;
 
 import java.util.List;
 import org.joda.time.DateTime;
+import org.springframework.stereotype.Service;
 import ru.unlocker.topic.stats.views.TopicParts;
 import ru.unlocker.topic.stats.views.TopicStats;
 
@@ -10,6 +11,7 @@ import ru.unlocker.topic.stats.views.TopicStats;
  *
  * @author unlocker
  */
+@Service
 public interface TopicDataProvider {
 
     /**
