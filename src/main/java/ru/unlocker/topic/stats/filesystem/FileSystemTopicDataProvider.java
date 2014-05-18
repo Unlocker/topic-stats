@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,8 +34,19 @@ import ru.unlocker.topic.stats.views.TopicStats;
  */
 public class FileSystemTopicDataProvider implements TopicDataProvider {
 
+    /**
+     * Название папки с историей запуска топика.
+     */
     public static final String HISTORY_FOLDER_NAME = "history";
+
+    /**
+     * Шаблон наименования папки отдельных запусков топика.
+     */
     public static final String TIMESTAMP_FOLDER_TEMPLATE = "YYYY-MM-dd-HH-mm-ss";
+
+    /**
+     * Наименование файла CSV.
+     */
     public static final String CSV_DATAFILE_NAME = "offsets.csv";
 
     /**

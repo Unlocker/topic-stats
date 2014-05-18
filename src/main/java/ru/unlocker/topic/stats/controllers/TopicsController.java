@@ -1,6 +1,5 @@
 package ru.unlocker.topic.stats.controllers;
 
-import java.util.Date;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.joda.time.DateTime;
@@ -24,8 +23,14 @@ import ru.unlocker.topic.stats.views.TopicStats;
 @Controller
 public class TopicsController {
 
+    /**
+     * Поставщик данных о топиках.
+     */
     private TopicDataProvider provider;
 
+    /**
+     * @param provider поставщик данных о топиках
+     */
     @Autowired
     public void setProvider(TopicDataProvider provider) {
         this.provider = provider;
@@ -33,6 +38,7 @@ public class TopicsController {
 
     /**
      * @return перечень топиков
+     * @throws ru.unlocker.topic.stats.TopicDataException ошибка получения списка топиков
      */
     @RequestMapping("/topics")
     @ResponseBody
@@ -45,13 +51,13 @@ public class TopicsController {
      *
      * @param id идентификатор топика
      * @return дата последнего запуска
+     * @throws ru.unlocker.topic.stats.TopicDataException.NoSuchTopicException топика не существует
+     * @throws ru.unlocker.topic.stats.TopicDataException.MissingTopicDataException топика ни разу не запускался
      */
     @RequestMapping("/topics/{id}/last")
     @ResponseBody()
     public DateTime getTopicTimestamp(@PathVariable(value = "id") String id) throws TopicDataException {
-        final DateTime ts = provider.getLastTopicTimestamp(id);
-        //return ISODateTimeFormat.dateTime().print(ts);
-        return ts;
+        return provider.getLastTopicTimestamp(id);
     }
 
     /**
@@ -59,6 +65,8 @@ public class TopicsController {
      *
      * @param id идентификатор
      * @return статистика
+     * @throws ru.unlocker.topic.stats.TopicDataException.NoSuchTopicException топика не существует
+     * @throws ru.unlocker.topic.stats.TopicDataException.MissingTopicDataException топика ни разу не запускался
      */
     @RequestMapping("/topics/{id}/stats")
     @ResponseBody
@@ -71,6 +79,8 @@ public class TopicsController {
      *
      * @param id идентификатор
      * @return список партиций топика
+     * @throws ru.unlocker.topic.stats.TopicDataException.NoSuchTopicException топика не существует
+     * @throws ru.unlocker.topic.stats.TopicDataException.MissingTopicDataException топика ни разу не запускался
      */
     @RequestMapping("/topics/{id}/parts")
     @ResponseBody

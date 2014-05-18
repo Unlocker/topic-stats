@@ -29,13 +29,27 @@ public class TopicDataException extends Exception {
         return new MissingTopicDataException(String.format(template, topicId));
     }
 
+    /**
+     * Базовое исключение приложения.
+     */
     public TopicDataException() {
     }
 
+    /**
+     * Базовое исключение приложения.
+     *
+     * @param message
+     */
     public TopicDataException(String message) {
         super(message);
     }
 
+    /**
+     * Базовое исключение приложения.
+     *
+     * @param message
+     * @param cause
+     */
     public TopicDataException(String message, Throwable cause) {
         super(message, cause);
     }
@@ -45,18 +59,28 @@ public class TopicDataException extends Exception {
      */
     public static class NoSuchTopicException extends TopicDataException {
 
-        public NoSuchTopicException(String message) {
+        /**
+         * Исключение, если запрошенный топик не найден.
+         *
+         * @param message
+         */
+        private NoSuchTopicException(String message) {
             super(message);
         }
 
     }
-    
+
     /**
      * Исключение, если нет данных по запускам топика.
      */
     public static class MissingTopicDataException extends TopicDataException {
 
-        public MissingTopicDataException(String message) {
+        /**
+         * Исключение, если нет данных по запускам топика.
+         *
+         * @param message
+         */
+        private MissingTopicDataException(String message) {
             super(message);
         }
 
