@@ -186,7 +186,6 @@ public class TopicsControllerTest {
         // GIVEN
         final String topicId = "a";
         final DateTime ts = new DateTime(2014, 5, 1, 0, 0);
-        final Integer val = 3;
         Map<Integer, Long> partsMap = ImmutableMap.of(1, 2L, 3, 4L, 5, 6L);
         TopicParts parts = new TopicParts(topicId, ts, partsMap);
         when(provider.getTopicParts(topicId)).thenReturn(parts);
