@@ -36,6 +36,10 @@ public class TopicDataException extends Exception {
         super(message);
     }
 
+    public TopicDataException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     /**
      * Исключение, если запрошенный топик не найден.
      */
