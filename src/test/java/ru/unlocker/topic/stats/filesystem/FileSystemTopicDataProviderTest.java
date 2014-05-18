@@ -1,6 +1,12 @@
 package ru.unlocker.topic.stats.filesystem;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,9 +19,9 @@ import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import ru.unlocker.topic.stats.TopicDataException;
 import ru.unlocker.topic.stats.TopicDataProvider;
+import ru.unlocker.topic.stats.views.TopicParts;
 
 /**
  * Тесты работы поставщика данных по топикам
@@ -151,4 +157,87 @@ public class FileSystemTopicDataProviderTest {
         assertThat(lastTs, is(ts));
     }
 
+    /**
+     * Проверка возвращения всех партиций, если в файле нет дубликатов.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void shouldReturnAllPartsForTopicWithoutDuplicates() throws Exception {
+        // GIVEN
+        final String topicId = "a";
+        final DateTime ts = new DateTime(2014, 5, 1, 5, 43);
+        Path dirPath = Paths.get(rootDir.toString(),
+                topicId,
+                FileSystemTopicDataProvider.HISTORY_FOLDER_NAME,
+                ts.toString(FileSystemTopicDataProvider.TIMESTAMP_FOLDER_TEMPLATE));
+        Files.createDirectories(dirPath);
+        writeFileFromResources("normal.csv", dirPath);
+        FileSystemTopicDataProvider provider = new FileSystemTopicDataProvider(rootDir.toString());
+        // WHEN
+        TopicParts parts = provider.getTopicParts(topicId);
+        // THEN
+        assertThat(parts, notNullValue());
+        assertThat(parts.getId(), is(topicId));
+        assertThat(parts.getTimestamp(), is(ts));
+        assertThat(parts.getParts(), notNullValue());
+        assertThat(parts.getParts().size(), is(5));
+        assertThat(parts.getParts().get(1), is(100L));
+        assertThat(parts.getParts().get(2), is(200L));
+        assertThat(parts.getParts().get(3), is(300L));
+        assertThat(parts.getParts().get(4), is(400L));
+        assertThat(parts.getParts().get(5), is(500L));
+    }
+
+    /**
+     * Проверка возвращения только уникальных партиций, если в файле есть дубликаты.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void shouldReturnUniquePartsForTopicWithDuplicates() throws Exception {
+        // GIVEN
+        final String topicId = "a";
+        final DateTime ts = new DateTime(2014, 5, 1, 5, 43);
+        Path dirPath = Paths.get(rootDir.toString(),
+                topicId,
+                FileSystemTopicDataProvider.HISTORY_FOLDER_NAME,
+                ts.toString(FileSystemTopicDataProvider.TIMESTAMP_FOLDER_TEMPLATE));
+        Files.createDirectories(dirPath);
+        writeFileFromResources("duplicate.csv", dirPath);
+        FileSystemTopicDataProvider provider = new FileSystemTopicDataProvider(rootDir.toString());
+        // WHEN
+        TopicParts parts = provider.getTopicParts(topicId);
+        // THEN
+        assertThat(parts, notNullValue());
+        assertThat(parts.getId(), is(topicId));
+        assertThat(parts.getTimestamp(), is(ts));
+        assertThat(parts.getParts(), notNullValue());
+        assertThat(parts.getParts().size(), is(1));
+        assertThat(parts.getParts().get(5), is(500L));
+    }
+
+    /**
+     * Записывает файл CSV из ресурсов.
+     *
+     * @param resource наименование ресурса
+     * @param dir папка назначения
+     * @throws IOException
+     */
+    private void writeFileFromResources(String resource, Path dir) throws IOException {
+        URL resourceUrl = Thread.currentThread().getContextClassLoader().getResource(resource);
+        File resourceFile = new File(resourceUrl.getPath());
+        Path csvPath = Files.createFile(Paths.get(dir.toString(),
+                FileSystemTopicDataProvider.CSV_DATAFILE_NAME));
+
+        try (InputStream input = new FileInputStream(resourceFile);
+                OutputStream output = new FileOutputStream(csvPath.toFile())) {
+
+            int read;
+            byte[] bytes = new byte[1024];
+            while ((read = input.read(bytes)) != -1) {
+                output.write(bytes, 0, read);
+            }
+        }
+    }
 }

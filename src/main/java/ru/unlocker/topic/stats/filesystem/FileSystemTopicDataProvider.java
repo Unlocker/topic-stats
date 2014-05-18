@@ -9,10 +9,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeComparator;
 import org.joda.time.format.DateTimeFormat;
@@ -116,13 +120,79 @@ public class FileSystemTopicDataProvider implements TopicDataProvider {
 
     @Override
     public TopicParts getTopicParts(String topicId) throws TopicDataException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final DateTime last = getLastTopicTimestamp(topicId);
+        Path csvPath = getCsvPath(topicId, last);
+        try (Stream<String> stream = Files.lines(csvPath)) {
+            CsvRowConsumer consumer = new CsvRowConsumer();
+            stream.forEach(consumer);
+            return new TopicParts(topicId, last, consumer.getParts());
+
+        } catch (IOException ex) {
+            final String message = String.format("Ошибка списка партиций топика '%s'.", topicId);
+            LOGGER.error(message, ex);
+            throw new TopicDataException(message, ex);
+        }
+    }
+
+    /**
+     * Метод получения пути к csv-файлу.
+     *
+     * @param topicId идентификатор топика
+     * @param ts временная метка
+     * @return путь к файлу
+     */
+    private Path getCsvPath(String topicId, DateTime ts) {
+        return Paths.get(root.toString(),
+                topicId,
+                HISTORY_FOLDER_NAME,
+                ts.toString(TIMESTAMP_FOLDER_TEMPLATE),
+                CSV_DATAFILE_NAME);
+    }
+
+    /**
+     * Обработчик строк в файле CSV.
+     */
+    private static class CsvRowConsumer implements Consumer<String> {
+
+        /**
+         * Набор партиций.
+         */
+        final Map<Integer, Long> parts = new HashMap<>();
+
+        /**
+         * @return набор партиций
+         */
+        public Map<Integer, Long> getParts() {
+            return parts;
+        }
+
+        @Override
+        public void accept(String t) {
+            String[] split = t.split(",");
+            if (split.length != 2) {
+                return;
+            }
+            try {
+                Integer part = Integer.parseInt(split[0]);
+                Long messageCount = Long.parseLong(split[1]);
+                Long oldMessageCount = parts.get(part);
+
+                if (oldMessageCount == null) {
+                    parts.put(part, messageCount);
+                } else {
+                    parts.put(part, messageCount + oldMessageCount);
+                }
+            } catch (NumberFormatException e) {
+                // Найдена некорректная строка
+            }
+        }
+
     }
 
     /**
      * Фильтр папок в соответствии с шаблоном времени.
      */
-    public static class TimestampFolderFilter implements DirectoryStream.Filter<Path> {
+    private static class TimestampFolderFilter implements DirectoryStream.Filter<Path> {
 
         @Override
         public boolean accept(Path entry) throws IOException {

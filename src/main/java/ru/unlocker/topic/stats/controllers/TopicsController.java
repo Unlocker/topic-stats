@@ -48,8 +48,7 @@ public class TopicsController {
      */
     @RequestMapping("/topics/{id}/last")
     @ResponseBody()
-    public DateTime getTopicTimestamp(@PathVariable(value = "id") String id)
-            throws TopicDataException.NoSuchTopicException, TopicDataException.MissingTopicDataException {
+    public DateTime getTopicTimestamp(@PathVariable(value = "id") String id) throws TopicDataException {
         final DateTime ts = provider.getLastTopicTimestamp(id);
         //return ISODateTimeFormat.dateTime().print(ts);
         return ts;
@@ -63,7 +62,7 @@ public class TopicsController {
      */
     @RequestMapping("/topics/{id}/stats")
     @ResponseBody
-    public TopicStats getTopicStats(@PathVariable(value = "id") String id) throws TopicDataException.NoSuchTopicException, TopicDataException.MissingTopicDataException {
+    public TopicStats getTopicStats(@PathVariable(value = "id") String id) throws TopicDataException {
         return provider.getTopicStats(id);
     }
 
@@ -75,7 +74,7 @@ public class TopicsController {
      */
     @RequestMapping("/topics/{id}/parts")
     @ResponseBody
-    public TopicParts getTopicParts(@PathVariable(value = "id") String id) throws TopicDataException.NoSuchTopicException, TopicDataException.MissingTopicDataException {
+    public TopicParts getTopicParts(@PathVariable(value = "id") String id) throws TopicDataException {
         return provider.getTopicParts(id);
     }
 
