@@ -1,7 +1,6 @@
 package ru.unlocker.topic.stats.views;
 
 import org.joda.time.DateTime;
-import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * Статистика по топику
@@ -18,7 +17,6 @@ public class TopicStats {
     /**
      * дата последнего запуска
      */
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private final DateTime timestamp;
 
     /**

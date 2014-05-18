@@ -31,6 +31,7 @@ import org.springframework.web.context.WebApplicationContext;
 import ru.unlocker.topic.stats.TopicDataException;
 import ru.unlocker.topic.stats.TopicDataProvider;
 import ru.unlocker.topic.stats.config.TestContext;
+import ru.unlocker.topic.stats.config.WebContext;
 import ru.unlocker.topic.stats.views.TopicParts;
 import ru.unlocker.topic.stats.views.TopicStats;
 
@@ -40,7 +41,7 @@ import ru.unlocker.topic.stats.views.TopicStats;
  * @author unlocker
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {TestContext.class})
+@ContextConfiguration(classes = {WebContext.class, TestContext.class})
 @WebAppConfiguration
 public class TopicsControllerTest {
 
@@ -132,7 +133,7 @@ public class TopicsControllerTest {
     public void shouldReturnLastTimestampForTopic() throws Exception {
         // GIVEN
         final String topicId = "a";
-        final DateTime ts = DateTime.parse("2014-05-01");
+        final DateTime ts = new DateTime(2014, 5, 1, 0, 0);
         when(provider.getLastTopicTimestamp(topicId)).thenReturn(ts);
         // WHEN
         ResultActions result = mockMvc.perform(get(String.format("/topics/%s/last", topicId)));
@@ -155,7 +156,7 @@ public class TopicsControllerTest {
     public void shouldReturnStatsForTopic() throws Exception {
         // GIVEN
         final String topicId = "a";
-        final DateTime ts = DateTime.parse("2014-05-01");
+        final DateTime ts = new DateTime(2014, 5, 1, 0, 0);
         final Integer val = 3;
         TopicStats stats = new TopicStats(topicId, ts, new Long(val), new Long(val), new Long(val));
         when(provider.getTopicStats(topicId)).thenReturn(stats);
@@ -184,7 +185,7 @@ public class TopicsControllerTest {
     public void shouldReturnPartsForTopic() throws Exception {
         // GIVEN
         final String topicId = "a";
-        final DateTime ts = DateTime.parse("2014-05-01");
+        final DateTime ts = new DateTime(2014, 5, 1, 0, 0);
         final Integer val = 3;
         Map<Integer, Long> partsMap = ImmutableMap.of(1, 2L, 3, 4L, 5, 6L);
         TopicParts parts = new TopicParts(topicId, ts, partsMap);

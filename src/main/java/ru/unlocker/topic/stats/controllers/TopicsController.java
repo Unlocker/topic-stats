@@ -48,11 +48,11 @@ public class TopicsController {
      */
     @RequestMapping("/topics/{id}/last")
     @ResponseBody()
-    public Date getTopicTimestamp(@PathVariable(value = "id") String id)
+    public DateTime getTopicTimestamp(@PathVariable(value = "id") String id)
             throws TopicDataException.NoSuchTopicException, TopicDataException.MissingTopicDataException {
         final DateTime ts = provider.getLastTopicTimestamp(id);
         //return ISODateTimeFormat.dateTime().print(ts);
-        return ts.toDate();
+        return ts;
     }
 
     /**
