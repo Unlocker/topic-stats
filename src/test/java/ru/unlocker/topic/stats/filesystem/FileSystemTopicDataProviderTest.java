@@ -8,10 +8,12 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import static org.hamcrest.Matchers.*;
+import org.joda.time.DateTime;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import ru.unlocker.topic.stats.TopicDataException;
 import ru.unlocker.topic.stats.TopicDataProvider;
 
@@ -95,6 +97,58 @@ public class FileSystemTopicDataProviderTest {
         assertThat(actualTopics, notNullValue());
         assertThat(actualTopics.size(), is(3));
         assertThat(actualTopics, containsInAnyOrder(topics.toArray()));
+    }
+
+    /**
+     * Проверка возврата времени запуска топика
+     *
+     * @throws Exception
+     */
+    @Test
+    public void shouldReturnTimestampForTopic() throws Exception {
+        // GIVEN
+        final String topicId = "a";
+        final DateTime ts = new DateTime(2014, 5, 1, 5, 43);
+        Path dirPath = Paths.get(rootDir.toString(),
+                topicId,
+                FileSystemTopicDataProvider.HISTORY_FOLDER_NAME,
+                ts.toString(FileSystemTopicDataProvider.TIMESTAMP_FOLDER_TEMPLATE));
+        dirPath = Files.createDirectories(dirPath);
+        Files.createFile(Paths.get(dirPath.toString(), FileSystemTopicDataProvider.CSV_DATAFILE_NAME));
+        FileSystemTopicDataProvider provider = new FileSystemTopicDataProvider(rootDir.toString());
+        // WHEN
+        DateTime lastTs = provider.getLastTopicTimestamp(topicId);
+        // THEN
+        assertThat(lastTs, notNullValue());
+        assertThat(lastTs, is(ts));
+    }
+
+    /**
+     * Проверка возврата времени последнего запуска топика
+     *
+     * @throws Exception
+     */
+    @Test
+    public void shouldReturnLastTimestampForTopic() throws Exception {
+        // GIVEN
+        final String topicId = "a";
+        final DateTime ts = new DateTime(2014, 5, 1, 5, 43);
+        // Создаём дополнительные отметки
+        for (int i = 0; i < 3; i++) {
+            DateTime anotherTs = ts.minusDays(i);
+            Path dirPath = Paths.get(rootDir.toString(),
+                    topicId,
+                    FileSystemTopicDataProvider.HISTORY_FOLDER_NAME,
+                    anotherTs.toString(FileSystemTopicDataProvider.TIMESTAMP_FOLDER_TEMPLATE));
+            dirPath = Files.createDirectories(dirPath);
+            Files.createFile(Paths.get(dirPath.toString(), FileSystemTopicDataProvider.CSV_DATAFILE_NAME));
+        }
+        FileSystemTopicDataProvider provider = new FileSystemTopicDataProvider(rootDir.toString());
+        // WHEN
+        DateTime lastTs = provider.getLastTopicTimestamp(topicId);
+        // THEN
+        assertThat(lastTs, notNullValue());
+        assertThat(lastTs, is(ts));
     }
 
 }

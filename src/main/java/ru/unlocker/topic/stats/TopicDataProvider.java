@@ -28,8 +28,7 @@ public interface TopicDataProvider {
      * @throws ru.unlocker.topic.stats.TopicDataException.NoSuchTopicException топик не найден
      * @throws ru.unlocker.topic.stats.TopicDataException.MissingTopicDataException нет данных по запускам топика
      */
-    DateTime getLastTopicTimestamp(String topicId)
-            throws TopicDataException.NoSuchTopicException, TopicDataException.MissingTopicDataException;
+    DateTime getLastTopicTimestamp(String topicId) throws TopicDataException;
 
     /**
      * Получает статистику по топику
@@ -39,8 +38,7 @@ public interface TopicDataProvider {
      * @throws ru.unlocker.topic.stats.TopicDataException.NoSuchTopicException топик не найден
      * @throws ru.unlocker.topic.stats.TopicDataException.MissingTopicDataException нет данных по запускам топика
      */
-    TopicStats getTopicStats(String topicId)
-            throws TopicDataException.NoSuchTopicException, TopicDataException.MissingTopicDataException;
+    TopicStats getTopicStats(String topicId) throws TopicDataException;
 
     /**
      * Получает список партиций
@@ -50,6 +48,5 @@ public interface TopicDataProvider {
      * @throws ru.unlocker.topic.stats.TopicDataException.NoSuchTopicException топик не найден
      * @throws ru.unlocker.topic.stats.TopicDataException.MissingTopicDataException нет данных по запускам топика
      */
-    TopicParts getTopicParts(String topicId)
-            throws TopicDataException.NoSuchTopicException, TopicDataException.MissingTopicDataException;
+    TopicParts getTopicParts(String topicId) throws TopicDataException;
 }
