@@ -22,6 +22,7 @@ import org.junit.Test;
 import ru.unlocker.topic.stats.TopicDataException;
 import ru.unlocker.topic.stats.TopicDataProvider;
 import ru.unlocker.topic.stats.views.TopicParts;
+import ru.unlocker.topic.stats.views.TopicStats;
 
 /**
  * Тесты работы поставщика данных по топикам
@@ -215,6 +216,62 @@ public class FileSystemTopicDataProviderTest {
         assertThat(parts.getParts(), notNullValue());
         assertThat(parts.getParts().size(), is(1));
         assertThat(parts.getParts().get(5), is(500L));
+    }
+
+    /**
+     * Проверка статистики топика без дубликатов
+     *
+     * @throws Exception
+     */
+    @Test
+    public void shouldReturnTopicStatsForTopicWithoutDuplicates() throws Exception {
+        // GIVEN
+        final String topicId = "a";
+        final DateTime ts = new DateTime(2014, 5, 1, 5, 43);
+        Path dirPath = Paths.get(rootDir.toString(),
+                topicId,
+                FileSystemTopicDataProvider.HISTORY_FOLDER_NAME,
+                ts.toString(FileSystemTopicDataProvider.TIMESTAMP_FOLDER_TEMPLATE));
+        Files.createDirectories(dirPath);
+        writeFileFromResources("normal.csv", dirPath);
+        FileSystemTopicDataProvider provider = new FileSystemTopicDataProvider(rootDir.toString());
+        // WHEN
+        TopicStats stats = provider.getTopicStats(topicId);
+        // THEN
+        assertThat(stats, notNullValue());
+        assertThat(stats.getId(), is(topicId));
+        assertThat(stats.getTimestamp(), is(ts));
+        assertThat(stats.getMin(), is(100L));
+        assertThat(stats.getMax(), is(500L));
+        assertThat(stats.getAvg(), is(300L));
+    }
+
+    /**
+     * Проверка статистики топика с дубликатами
+     *
+     * @throws Exception
+     */
+    @Test
+    public void shouldReturnTopicStatsForTopicWithDuplicates() throws Exception {
+        // GIVEN
+        final String topicId = "a";
+        final DateTime ts = new DateTime(2014, 5, 1, 5, 43);
+        Path dirPath = Paths.get(rootDir.toString(),
+                topicId,
+                FileSystemTopicDataProvider.HISTORY_FOLDER_NAME,
+                ts.toString(FileSystemTopicDataProvider.TIMESTAMP_FOLDER_TEMPLATE));
+        Files.createDirectories(dirPath);
+        writeFileFromResources("duplicate.csv", dirPath);
+        FileSystemTopicDataProvider provider = new FileSystemTopicDataProvider(rootDir.toString());
+        // WHEN
+        TopicStats stats = provider.getTopicStats(topicId);
+        // THEN
+        assertThat(stats, notNullValue());
+        assertThat(stats.getId(), is(topicId));
+        assertThat(stats.getTimestamp(), is(ts));
+        assertThat(stats.getMin(), is(500L));
+        assertThat(stats.getMax(), is(500L));
+        assertThat(stats.getAvg(), is(500L));
     }
 
     /**

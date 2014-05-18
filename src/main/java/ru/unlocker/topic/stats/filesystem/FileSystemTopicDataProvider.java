@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -115,7 +116,22 @@ public class FileSystemTopicDataProvider implements TopicDataProvider {
 
     @Override
     public TopicStats getTopicStats(String topicId) throws TopicDataException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final DateTime last = getLastTopicTimestamp(topicId);
+        Path csvPath = getCsvPath(topicId, last);
+        try (Stream<String> stream = Files.lines(csvPath)) {
+            CsvRowConsumer consumer = new CsvRowConsumer();
+            stream.forEach(consumer);
+            Map<Integer, Long> parts = consumer.getParts();
+            if (parts.isEmpty()) {
+                throw TopicDataException.missingTopicDataException(topicId);
+            }
+            return calculateStatsForTopic(topicId, last, parts);
+
+        } catch (IOException ex) {
+            final String message = String.format("Ошибка получения статистики топика '%s'.", topicId);
+            LOGGER.error(message, ex);
+            throw new TopicDataException(message, ex);
+        }
     }
 
     @Override
@@ -128,7 +144,7 @@ public class FileSystemTopicDataProvider implements TopicDataProvider {
             return new TopicParts(topicId, last, consumer.getParts());
 
         } catch (IOException ex) {
-            final String message = String.format("Ошибка списка партиций топика '%s'.", topicId);
+            final String message = String.format("Ошибка получения списка партиций топика '%s'.", topicId);
             LOGGER.error(message, ex);
             throw new TopicDataException(message, ex);
         }
@@ -147,6 +163,34 @@ public class FileSystemTopicDataProvider implements TopicDataProvider {
                 HISTORY_FOLDER_NAME,
                 ts.toString(TIMESTAMP_FOLDER_TEMPLATE),
                 CSV_DATAFILE_NAME);
+    }
+
+    /**
+     * Рассчитать статистику для топика.
+     *
+     * @param topicId идентификатор топика
+     * @param last временная отметка
+     * @param parts список партиций
+     * @return статистика
+     */
+    private TopicStats calculateStatsForTopic(String topicId, DateTime last, Map<Integer, Long> parts) {
+        long min, max, sum;
+        Iterator<Long> iterator = parts.values().iterator();
+        Long firstVal = iterator.next();
+        min = firstVal;
+        max = firstVal;
+        sum = firstVal;
+        while (iterator.hasNext()) {
+            Long value = iterator.next();
+            if (value < min) {
+                min = value;
+            }
+            if (value > max) {
+                max = value;
+            }
+            sum += value;
+        }
+        return new TopicStats(topicId, last, min, max, sum / parts.size());
     }
 
     /**
