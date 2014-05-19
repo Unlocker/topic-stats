@@ -18,6 +18,8 @@ A little REST-service to test Spring Boot and MVC
 
 ## Решение:
 
+Сборку необходимо осуществлять при помощи JDK не ниже версии 1.8 (NIO Stream Functions).
+
 ### Структура REST-сервиса
 
 | Запрос  | URL (GET) |
